@@ -43,22 +43,9 @@
             <button class="btn btn-danger" id="btnReiniciar">🗑️ Reiniciar Todo</button>
         </div>
 
-        <!-- Panel de Google Sheets -->
-<!-- Panel de Google Sheets -->
-<div class="sheets-panel">
-    <span class="panel-label">🔗 Google Sheets:</span>
-    <input type="text" id="sheetUrl" class="sheets-input" 
-           value="https://docs.google.com/spreadsheets/d/1s9UTRK7U542VepLoHJkdLNHwO5BnWxAv5f2dRSR3UF0/export?format=csv"
-           readonly
-           style="background:#e9ecef; cursor:default;">
-    <button class="btn btn-sheets" id="btnCargarSheets" style="display:none;">📥 Cargar desde Sheets</button>
-    <button class="btn btn-primary" id="btnExportarSheets">💾 Guardar como CSV</button>
-    <small class="panel-hint">🔒 Conexión fija con la hoja de cálculo de docentes</small>
-</div>
-
         <!-- Estado de conexión -->
         <div id="connectionStatus" class="connection-status">
-            ⚠️ No conectado. Haz clic en "Cargar desde Sheets" para obtener los datos.
+            🔄 Conectando a la base de datos...
         </div>
 
         <!-- Filtro por curso -->
@@ -93,11 +80,12 @@
                             <th>Curso</th>
                             <th>Nombre del Docente</th>
                             <th>Asistencia</th>
+                            <th>Hora Ingreso</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        <tr><td colspan="5" class="empty-state">Cargando datos...</td></tr>
+                        <tr><td colspan="6" class="empty-state">Cargando datos...</td><tr>
                     </tbody>
                 </table>
             </div>

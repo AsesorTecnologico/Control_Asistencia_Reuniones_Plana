@@ -1,16 +1,40 @@
 /**
  * CONTROL ASISTENCIA DOCENTES
- * Integración con Google Sheets - Una sola hoja con columnas: Curso, Docente, Asistió
+ * Integración con Google Sheets - Con registro de hora de ingreso
  */
 
-// URL de Google Sheets (pública)
-const DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1s9UTRK7U542VepLoHJkdLNHwO5BnWxAv5f2dRSR3UF0/edit?gid=0#gid=0";
+// ============================================
+// CONFIGURACIÓN INTERNA - OCULTA PARA EL USUARIO
+// ============================================
+const HOJA_CSV_URL = "https://docs.google.com/spreadsheets/d/1s9UTRK7U542VepLoHJkdLNHwO5BnWxAv5f2dRSR3UF0/export?format=csv";
 
 // Estado global
 let docentes = [];
 let cursosDisponibles = [];
 let cursoSeleccionado = 'all';
 let busquedaActual = '';
+
+// ============================================
+// FUNCIONES AUXILIARES
+// ============================================
+function obtenerHoraActual() {
+    const ahora = new Date();
+    return ahora.toLocaleTimeString('es-PE', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+}
+
+function obtenerFechaActual() {
+    const ahora = new Date();
+    return ahora.toLocaleDateString('es-PE', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+}
 
 // ============================================
 // FUNCIONES DE PERSISTENCIA LOCAL
@@ -20,14 +44,13 @@ function guardarLocal() {
     localStorage.setItem('cursosDisponibles', JSON.stringify(cursosDisponibles));
 }
 
-function cargarLocal() {
+function cargarLocalRespaldo() {
     const guardadoDocentes = localStorage.getItem('docentesPorCurso');
     const guardadoCursos = localStorage.getItem('cursosDisponibles');
     
     if (guardadoDocentes && JSON.parse(guardadoDocentes).length > 0) {
         docentes = JSON.parse(guardadoDocentes);
     } else {
-        // Datos de ejemplo basados en tu imagen
         docentes = obtenerDatosEjemplo();
     }
     
@@ -42,25 +65,25 @@ function cargarLocal() {
 
 function obtenerDatosEjemplo() {
     return [
-        { id: 1, nombre: "Alarcón Marcapura Jesús", curso: "ECONOMÍA", asistio: false },
-        { id: 2, nombre: "Arellano Salas Brando", curso: "ECONOMÍA", asistio: false },
-        { id: 3, nombre: "Arellano Salas Brenda", curso: "ECONOMÍA", asistio: false },
-        { id: 4, nombre: "Bazán Herrera Rubén", curso: "ECONOMÍA", asistio: false },
-        { id: 5, nombre: "Fernández Rodríguez Mario", curso: "ECONOMÍA", asistio: false },
-        { id: 6, nombre: "Huamán Javier Percy Renatto", curso: "ECONOMÍA", asistio: false },
-        { id: 7, nombre: "Huamaní Taipe Francisco", curso: "ECONOMÍA", asistio: false },
-        { id: 8, nombre: "López Baca Juan Martín (A.P.)", curso: "ECONOMÍA", asistio: false },
-        { id: 9, nombre: "López Paredes, Gabriel", curso: "ECONOMÍA", asistio: false },
-        { id: 10, nombre: "López Shapiama Cristian ©", curso: "ECONOMÍA", asistio: false },
-        { id: 11, nombre: "Luján Guevara Anselmo", curso: "ECONOMÍA", asistio: false },
-        { id: 12, nombre: "Mamani Mallma Alexander", curso: "ECONOMÍA", asistio: false },
-        { id: 13, nombre: "Noriega Gonzales Francisco", curso: "ECONOMÍA", asistio: false },
-        { id: 14, nombre: "Paz Camacho José", curso: "ECONOMÍA", asistio: false },
-        { id: 15, nombre: "Salvatierra Velarde Ángel", curso: "ECONOMÍA", asistio: false },
-        { id: 16, nombre: "Sotelo Aguilar Medalith", curso: "ECONOMÍA", asistio: false },
-        { id: 17, nombre: "Susanibar Nieves Daysi Beatriz", curso: "ECONOMÍA", asistio: false },
-        { id: 18, nombre: "Vásquez García Carlos", curso: "ECONOMÍA", asistio: false },
-        { id: 19, nombre: "Altamirano Romero José", curso: "GEOGRAFÍA", asistio: false }
+        { id: 1, nombre: "Alarcón Marcapura Jesús", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 2, nombre: "Arellano Salas Brando", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 3, nombre: "Arellano Salas Brenda", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 4, nombre: "Bazán Herrera Rubén", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 5, nombre: "Fernández Rodríguez Mario", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 6, nombre: "Huamán Javier Percy Renatto", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 7, nombre: "Huamaní Taipe Francisco", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 8, nombre: "López Baca Juan Martín (A.P.)", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 9, nombre: "López Paredes, Gabriel", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 10, nombre: "López Shapiama Cristian ©", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 11, nombre: "Luján Guevara Anselmo", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 12, nombre: "Mamani Mallma Alexander", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 13, nombre: "Noriega Gonzales Francisco", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 14, nombre: "Paz Camacho José", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 15, nombre: "Salvatierra Velarde Ángel", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 16, nombre: "Sotelo Aguilar Medalith", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 17, nombre: "Susanibar Nieves Daysi Beatriz", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 18, nombre: "Vásquez García Carlos", curso: "ECONOMÍA", asistio: false, hora: "", fecha: "" },
+        { id: 19, nombre: "Altamirano Romero José", curso: "GEOGRAFÍA", asistio: false, hora: "", fecha: "" }
     ];
 }
 
@@ -117,7 +140,7 @@ function renderizarTabla() {
         let mensaje = cursoSeleccionado === 'all' 
             ? 'No hay docentes registrados en el sistema'
             : `No hay docentes registrados en el curso "${cursoSeleccionado}"`;
-        tbody.innerHTML = `<tr><td colspan="5" class="empty-state">${mensaje}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${mensaje}</td><tr>`;
         return;
     }
     
@@ -132,6 +155,11 @@ function renderizarTabla() {
                 </span>
             </td>
             <td>
+                ${docente.asistio && docente.hora ? 
+                    `<span class="hora-badge">🕐 ${escapeHtml(docente.hora)}</span>` : 
+                    '<span class="hora-badge" style="opacity:0.5;">--:--:--</span>'}
+            </td>
+            <td>
                 <button class="toggle-btn ${docente.asistio ? 'toggle-btn-ausente' : 'toggle-btn-presente'}" 
                         onclick="window.toggleAsistencia(${docente.id})">
                     ${docente.asistio ? 'Marcar Ausente' : 'Marcar Presente'}
@@ -140,7 +168,7 @@ function renderizarTabla() {
                     🗑️
                 </button>
             </td>
-        </tr>
+        </table>
     `).join('');
 }
 
@@ -156,7 +184,19 @@ function actualizarUI() {
 window.toggleAsistencia = function(id) {
     const docente = docentes.find(d => d.id === id);
     if (docente) {
-        docente.asistio = !docente.asistio;
+        const nuevoEstado = !docente.asistio;
+        docente.asistio = nuevoEstado;
+        
+        if (nuevoEstado) {
+            // Se marca como presente - registrar hora actual
+            docente.hora = obtenerHoraActual();
+            docente.fecha = obtenerFechaActual();
+        } else {
+            // Se marca como ausente - limpiar hora
+            docente.hora = "";
+            docente.fecha = "";
+        }
+        
         actualizarUI();
     }
 };
@@ -192,7 +232,9 @@ function agregarDocente() {
         id: Date.now(),
         nombre: nombre,
         curso: curso,
-        asistio: true
+        asistio: false,
+        hora: "",
+        fecha: ""
     });
     
     document.getElementById('nuevoDocente').value = '';
@@ -206,7 +248,14 @@ function marcarTodosPresentes() {
         alert('No hay docentes en el filtro actual');
         return;
     }
-    filtrados.forEach(d => d.asistio = true);
+    const horaActual = obtenerHoraActual();
+    const fechaActual = obtenerFechaActual();
+    
+    filtrados.forEach(d => {
+        d.asistio = true;
+        d.hora = horaActual;
+        d.fecha = fechaActual;
+    });
     actualizarUI();
     alert('✅ Todos los docentes del filtro actual han sido marcados como presentes');
 }
@@ -220,12 +269,18 @@ function reiniciarTodo() {
 }
 
 // ============================================
-// EXPORTAR CSV
+// EXPORTAR CSV (incluye hora de ingreso)
 // ============================================
 function exportarCSV() {
     const datos = getDocentesFiltrados();
-    const headers = ['Curso', 'Docente', 'Asistió'];
-    const rows = datos.map(d => [d.curso, d.nombre, d.asistio ? 'SI' : 'NO']);
+    const headers = ['Curso', 'Docente', 'Asistió', 'Hora Ingreso', 'Fecha'];
+    const rows = datos.map(d => [
+        d.curso, 
+        d.nombre, 
+        d.asistio ? 'SI' : 'NO',
+        d.asistio ? d.hora : '',
+        d.asistio ? d.fecha : ''
+    ]);
     const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
     
     const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
@@ -247,7 +302,7 @@ function exportarCSV() {
 }
 
 // ============================================
-// GENERAR PDF
+// GENERAR PDF (incluye hora de ingreso)
 // ============================================
 function generarPDF() {
     const hoy = new Date();
@@ -281,6 +336,9 @@ function generarPDF() {
                 <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: center;">${escapeHtml(docente.curso)}</td>
                 <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: center; color: ${docente.asistio ? '#28a745' : '#dc3545'}; font-weight: bold;">
                     ${docente.asistio ? '✓ PRESENTE' : '✗ AUSENTE'}
+                </td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: center; font-family: monospace;">
+                    ${docente.asistio && docente.hora ? docente.hora : '---'}
                 </td>
             </tr>
         `;
@@ -327,7 +385,13 @@ function generarPDF() {
             ${total > 0 ? `
             <table style="width:100%;border-collapse:collapse;">
                 <thead>
-                    <tr><th style="width: 50px;">#</th><th>NOMBRE DEL DOCENTE</th><th>CURSO</th><th style="width: 120px;">ASISTENCIA</th></tr>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>NOMBRE DEL DOCENTE</th>
+                        <th>CURSO</th>
+                        <th style="width: 120px;">ASISTENCIA</th>
+                        <th style="width: 100px;">HORA INGRESO</th>
+                    </tr>
                 </thead>
                 <tbody>${filasTabla}</tbody>
             </table>
@@ -350,30 +414,7 @@ function generarPDF() {
 }
 
 // ============================================
-// EXPORTAR A CSV PARA SHEETS
-// ============================================
-function exportarAGoogleSheets() {
-    const datos = docentes;
-    const headers = ['Curso', 'Docente', 'Asistió'];
-    const rows = datos.map(d => [d.curso, d.nombre, d.asistio ? 'SI' : 'NO']);
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    
-    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `asistencia_docentes_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-    alert('✅ Archivo CSV descargado. Puedes importarlo a Google Sheets');
-}
-
-// ============================================
-// CARGAR DESDE GOOGLE SHEETS (CSV)
-// ============================================
-const HOJA_CSV_URL = "https://docs.google.com/spreadsheets/d/1s9UTRK7U542VepLoHJkdLNHwO5BnWxAv5f2dRSR3UF0/export?format=csv";
-
-// ============================================
-// CARGAR DESDE GOOGLE SHEETS (conexión directa)
+// CARGAR DESDE GOOGLE SHEETS
 // ============================================
 async function cargarDesdeGoogleSheets() {
     const statusDiv = document.getElementById('connectionStatus');
@@ -381,14 +422,12 @@ async function cargarDesdeGoogleSheets() {
     statusDiv.className = 'connection-status';
     
     try {
-        // Usar la URL fija en lugar de leer del input
         const response = await fetch(HOJA_CSV_URL);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
         const csvText = await response.text();
         
-        // Parsear CSV
         const nuevosDocentes = [];
         let idCounter = Date.now();
         const lineas = csvText.split(/\r?\n/);
@@ -399,7 +438,6 @@ async function cargarDesdeGoogleSheets() {
             const linea = lineas[i].trim();
             if (!linea) continue;
             
-            // Parsear CSV (manejo simple)
             let partes = [];
             let enComillas = false;
             let actual = '';
@@ -416,11 +454,8 @@ async function cargarDesdeGoogleSheets() {
                 }
             }
             partes.push(actual.trim());
-            
-            // Limpiar comillas
             partes = partes.map(p => p.replace(/^["']|["']$/g, ''));
             
-            // Saltar encabezados
             if (esPrimeraLinea) {
                 esPrimeraLinea = false;
                 if (partes[0] && (partes[0].toLowerCase() === 'curso' || 
@@ -429,20 +464,18 @@ async function cargarDesdeGoogleSheets() {
                 }
             }
             
-            // Ahora esperamos: [Curso, Docente, Asistió]
             let curso = partes[0] || '';
             let nombre = partes[1] || '';
             let asistioText = partes[2] || '';
+            let hora = partes[3] || '';
+            let fecha = partes[4] || '';
             
             if (nombre) {
-                let asistio = false;
-                if (asistioText.toLowerCase() === 'si' || 
-                    asistioText.toLowerCase() === 'sí' || 
-                    asistioText.toLowerCase() === 'presente' ||
-                    asistioText.toLowerCase() === 'true' ||
-                    asistioText === '1') {
-                    asistio = true;
-                }
+                let asistio = asistioText.toLowerCase() === 'si' || 
+                              asistioText.toLowerCase() === 'sí' || 
+                              asistioText.toLowerCase() === 'presente' ||
+                              asistioText.toLowerCase() === 'true' ||
+                              asistioText === '1';
                 
                 if (curso) cursosEncontrados.add(curso);
                 
@@ -450,7 +483,9 @@ async function cargarDesdeGoogleSheets() {
                     id: idCounter++,
                     nombre: nombre,
                     curso: curso || "SIN CURSO",
-                    asistio: asistio
+                    asistio: asistio,
+                    hora: asistio ? hora : "",
+                    fecha: asistio ? fecha : ""
                 });
             }
         }
@@ -463,14 +498,16 @@ async function cargarDesdeGoogleSheets() {
             statusDiv.innerHTML = `✅ Conectado correctamente. Cargados ${docentes.length} docentes desde ${cursosDisponibles.length} cursos`;
             statusDiv.className = 'connection-status connected';
         } else {
-            statusDiv.innerHTML = '⚠️ No se encontraron datos en el CSV. Verifica el formato: Curso,Docente,Asistió';
+            statusDiv.innerHTML = '⚠️ No se encontraron datos. Usando datos de respaldo.';
             statusDiv.className = 'connection-status error';
+            cargarLocalRespaldo();
         }
         
     } catch (error) {
         console.error('Error:', error);
-        statusDiv.innerHTML = `❌ Error de conexión: ${error.message}. Asegúrate de que la hoja esté publicada como CSV (Archivo → Compartir → Publicar en web → CSV)`;
+        statusDiv.innerHTML = `⚠️ Error de conexión. Usando datos locales.`;
         statusDiv.className = 'connection-status error';
+        cargarLocalRespaldo();
     }
 }
 
@@ -513,8 +550,6 @@ function inicializarEventos() {
     document.getElementById('btnGenerarPDF').addEventListener('click', generarPDF);
     document.getElementById('btnReiniciar').addEventListener('click', reiniciarTodo);
     document.getElementById('btnAgregar').addEventListener('click', agregarDocente);
-    document.getElementById('btnCargarSheets').addEventListener('click', cargarDesdeGoogleSheets);
-    document.getElementById('btnExportarSheets').addEventListener('click', exportarAGoogleSheets);
     
     document.getElementById('nuevoDocente').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') agregarDocente();
@@ -532,18 +567,7 @@ function inicializarEventos() {
 async function init() {
     inicializarSelects();
     inicializarEventos();
-    
-    const statusDiv = document.getElementById('connectionStatus');
-    statusDiv.innerHTML = '🔄 Conectando a Google Sheets...';
-    statusDiv.className = 'connection-status';
-    
-    // Cargar datos desde la hoja de cálculo automáticamente
     await cargarDesdeGoogleSheets();
-    
-    // Si no se pudo cargar desde la hoja, usar datos locales
-    if (docentes.length === 0) {
-        cargarLocal();
-    }
 }
 
 document.addEventListener('DOMContentLoaded', init);

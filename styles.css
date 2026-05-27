@@ -16,7 +16,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1300px;
     margin: 0 auto;
     background: white;
     border-radius: 20px;
@@ -146,46 +146,6 @@ body {
 .btn-pdf:hover {
     background: #b02a37;
     transform: translateY(-2px);
-}
-
-.btn-sheets {
-    background: #0F9D58;
-    color: white;
-}
-
-.btn-sheets:hover {
-    background: #0b7e48;
-    transform: translateY(-2px);
-}
-
-/* ========== PANEL GOOGLE SHEETS ========== */
-.sheets-panel {
-    padding: 15px 20px;
-    background: #e8f5e9;
-    border-bottom: 1px solid #c8e6c9;
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.panel-label {
-    font-weight: 600;
-    color: #2e7d32;
-}
-
-.sheets-input {
-    flex: 2;
-    min-width: 300px;
-    padding: 10px;
-    border: 2px solid #c8e6c9;
-    border-radius: 8px;
-    font-size: 13px;
-}
-
-.panel-hint {
-    color: #2e7d32;
-    font-size: 12px;
 }
 
 /* ========== ESTADO DE CONEXIÓN ========== */
@@ -360,6 +320,15 @@ tr:hover {
     display: inline-block;
 }
 
+.hora-badge {
+    background: #e8f4fd;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    display: inline-block;
+    font-family: monospace;
+}
+
 /* Botones de acción */
 .toggle-btn {
     padding: 5px 12px;
@@ -434,21 +403,12 @@ tr:hover {
         align-items: stretch;
     }
     
-    .sheets-panel {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .sheets-input {
-        min-width: auto;
-    }
-    
-    .curso-select {
-        width: 100%;
-    }
-    
     th, td {
         padding: 8px 10px;
-        font-size: 13px;
+        font-size: 12px;
+    }
+    
+    .curso-badge, .hora-badge {
+        font-size: 10px;
     }
 }
