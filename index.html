@@ -44,16 +44,17 @@
         </div>
 
         <!-- Panel de Google Sheets -->
-        <div class="sheets-panel">
-            <span class="panel-label">🔗 Google Sheets:</span>
-            <input type="text" id="sheetUrl" class="sheets-input" 
-                   value="https://docs.google.com/spreadsheets/d/1s9UTRK7U542VepLoHJkdLNHwO5BnWxAv5f2dRSR3UF0/edit?gid=0#gid=0"
-                   placeholder="URL de Google Sheets">
-            <button class="btn btn-sheets" id="btnCargarSheets">📥 Cargar desde Sheets</button>
-            <button class="btn btn-primary" id="btnExportarSheets">💾 Guardar como CSV</button>
-            <button class="btn btn-secondary" id="btnActualizarPestanas">🔄 Actualizar Pestañas</button>
-            <small class="panel-hint">💡 La hoja debe tener una pestaña por cada curso</small>
-        </div>
+<!-- Panel de Google Sheets -->
+<div class="sheets-panel">
+    <span class="panel-label">🔗 Google Sheets:</span>
+    <input type="text" id="sheetUrl" class="sheets-input" 
+           value="https://docs.google.com/spreadsheets/d/1s9UTRK7U542VepLoHJkdLNHwO5BnWxAv5f2dRSR3UF0/export?format=csv"
+           readonly
+           style="background:#e9ecef; cursor:default;">
+    <button class="btn btn-sheets" id="btnCargarSheets" style="display:none;">📥 Cargar desde Sheets</button>
+    <button class="btn btn-primary" id="btnExportarSheets">💾 Guardar como CSV</button>
+    <small class="panel-hint">🔒 Conexión fija con la hoja de cálculo de docentes</small>
+</div>
 
         <!-- Estado de conexión -->
         <div id="connectionStatus" class="connection-status">

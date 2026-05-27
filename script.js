@@ -370,48 +370,19 @@ function exportarAGoogleSheets() {
 // ============================================
 // CARGAR DESDE GOOGLE SHEETS (CSV)
 // ============================================
+const HOJA_CSV_URL = "https://docs.google.com/spreadsheets/d/1s9UTRK7U542VepLoHJkdLNHwO5BnWxAv5f2dRSR3UF0/export?format=csv";
+
+// ============================================
+// CARGAR DESDE GOOGLE SHEETS (conexión directa)
+// ============================================
 async function cargarDesdeGoogleSheets() {
-    let url = document.getElementById('sheetUrl').value.trim();
-    
-    if (!url) {
-        alert('Ingrese la URL del CSV publicado de Google Sheets');
-        return;
-    }
-    
-    // Extraer ID de la hoja
-    let sheetId = null;
-    let gid = null;
-    
-    // Extraer ID del documento
-    const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if (idMatch) {
-        sheetId = idMatch[1];
-    }
-    
-    // Extraer gid (pestaña específica)
-    const gidMatch = url.match(/gid=([0-9]+)/);
-    if (gidMatch) {
-        gid = gidMatch[1];
-    }
-    
-    // Construir URL de exportación CSV
-    let csvUrl;
-    if (sheetId) {
-        if (gid) {
-            csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
-        } else {
-            csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-        }
-    } else {
-        csvUrl = url;
-    }
-    
     const statusDiv = document.getElementById('connectionStatus');
     statusDiv.innerHTML = '📥 Cargando datos desde Google Sheets...';
     statusDiv.className = 'connection-status';
     
     try {
-        const response = await fetch(csvUrl);
+        // Usar la URL fija en lugar de leer del input
+        const response = await fetch(HOJA_CSV_URL);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
@@ -489,7 +460,7 @@ async function cargarDesdeGoogleSheets() {
             cursosDisponibles = [...cursosEncontrados].sort();
             actualizarSelectsCursos();
             actualizarUI();
-            statusDiv.innerHTML = `✅ Cargados ${docentes.length} docentes desde ${cursosDisponibles.length} cursos`;
+            statusDiv.innerHTML = `✅ Conectado correctamente. Cargados ${docentes.length} docentes desde ${cursosDisponibles.length} cursos`;
             statusDiv.className = 'connection-status connected';
         } else {
             statusDiv.innerHTML = '⚠️ No se encontraron datos en el CSV. Verifica el formato: Curso,Docente,Asistió';
@@ -498,9 +469,8 @@ async function cargarDesdeGoogleSheets() {
         
     } catch (error) {
         console.error('Error:', error);
-        statusDiv.innerHTML = `❌ Error al cargar: ${error.message}. Asegúrate de que la hoja esté publicada como CSV (Archivo → Compartir → Publicar en web → CSV)`;
+        statusDiv.innerHTML = `❌ Error de conexión: ${error.message}. Asegúrate de que la hoja esté publicada como CSV (Archivo → Compartir → Publicar en web → CSV)`;
         statusDiv.className = 'connection-status error';
-        alert('Error al cargar desde Google Sheets. Asegúrate de:\n1. Publicar la hoja como CSV\n2. Usar la URL publicada\n3. Que tenga columnas: Curso, Docente, Asistió');
     }
 }
 
@@ -559,14 +529,21 @@ function inicializarEventos() {
 // ============================================
 // INICIALIZACIÓN PRINCIPAL
 // ============================================
-function init() {
+async function init() {
     inicializarSelects();
     inicializarEventos();
-    cargarLocal();
     
     const statusDiv = document.getElementById('connectionStatus');
-    statusDiv.innerHTML = '🔌 Listo. Haz clic en "Cargar desde Sheets" para obtener los datos de tu hoja.';
+    statusDiv.innerHTML = '🔄 Conectando a Google Sheets...';
     statusDiv.className = 'connection-status';
+    
+    // Cargar datos desde la hoja de cálculo automáticamente
+    await cargarDesdeGoogleSheets();
+    
+    // Si no se pudo cargar desde la hoja, usar datos locales
+    if (docentes.length === 0) {
+        cargarLocal();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', init);
