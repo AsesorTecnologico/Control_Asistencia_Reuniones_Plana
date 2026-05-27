@@ -1,6 +1,7 @@
 /**
  * CONTROL ASISTENCIA DOCENTES
  * Integración con Google Sheets - Con registro de hora de ingreso
+ * Botones de agregar, reiniciar y eliminar INHABILITADOS
  */
 
 // ============================================
@@ -140,7 +141,7 @@ function renderizarTabla() {
         let mensaje = cursoSeleccionado === 'all' 
             ? 'No hay docentes registrados en el sistema'
             : `No hay docentes registrados en el curso "${cursoSeleccionado}"`;
-        tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${mensaje}</td><tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${mensaje}</td></tr>`;
         return;
     }
     
@@ -164,9 +165,8 @@ function renderizarTabla() {
                         onclick="window.toggleAsistencia(${docente.id})">
                     ${docente.asistio ? 'Marcar Ausente' : 'Marcar Presente'}
                 </button>
-                <button class="delete-btn" onclick="window.eliminarDocente(${docente.id})">
-                    🗑️
-                </button>
+                <!-- Botón Eliminar INHABILITADO -->
+                <!-- <button class="delete-btn" onclick="window.eliminarDocente(${docente.id})">🗑️</button> -->
             </td>
         </table>
     `).join('');
@@ -188,11 +188,9 @@ window.toggleAsistencia = function(id) {
         docente.asistio = nuevoEstado;
         
         if (nuevoEstado) {
-            // Se marca como presente - registrar hora actual
             docente.hora = obtenerHoraActual();
             docente.fecha = obtenerFechaActual();
         } else {
-            // Se marca como ausente - limpiar hora
             docente.hora = "";
             docente.fecha = "";
         }
@@ -201,16 +199,21 @@ window.toggleAsistencia = function(id) {
     }
 };
 
+// Función eliminar INHABILITADA (comentada)
+/*
 window.eliminarDocente = function(id) {
     if (confirm('¿Está seguro de eliminar este docente?')) {
         docentes = docentes.filter(d => d.id !== id);
         actualizarUI();
     }
 };
+*/
 
 // ============================================
-// FUNCIONES CRUD
+// FUNCIONES CRUD - INHABILITADAS
 // ============================================
+// Función agregar docente INHABILITADA
+/*
 function agregarDocente() {
     const nombre = document.getElementById('nuevoDocente').value.trim();
     const curso = document.getElementById('cursoDocente').value;
@@ -241,6 +244,18 @@ function agregarDocente() {
     actualizarUI();
     alert(`✅ Docente "${nombre}" agregado correctamente al curso ${curso}`);
 }
+*/
+
+// Función reiniciar todo INHABILITADA
+/*
+function reiniciarTodo() {
+    if (confirm('⚠️ ¿Está seguro de eliminar TODOS los docentes? Esta acción no se puede deshacer.')) {
+        docentes = [];
+        actualizarUI();
+        alert('🗑️ Todos los docentes han sido eliminados');
+    }
+}
+*/
 
 function marcarTodosPresentes() {
     const filtrados = getDocentesFiltrados();
@@ -258,14 +273,6 @@ function marcarTodosPresentes() {
     });
     actualizarUI();
     alert('✅ Todos los docentes del filtro actual han sido marcados como presentes');
-}
-
-function reiniciarTodo() {
-    if (confirm('⚠️ ¿Está seguro de eliminar TODOS los docentes? Esta acción no se puede deshacer.')) {
-        docentes = [];
-        actualizarUI();
-        alert('🗑️ Todos los docentes han sido eliminados');
-    }
 }
 
 // ============================================
@@ -520,12 +527,6 @@ function actualizarSelectsCursos() {
     cursosDisponibles.forEach(curso => {
         filtroSelect.innerHTML += `<option value="${curso}">📚 ${curso}</option>`;
     });
-    
-    const addSelect = document.getElementById('cursoDocente');
-    addSelect.innerHTML = '<option value="">Seleccionar curso...</option>';
-    cursosDisponibles.forEach(curso => {
-        addSelect.innerHTML += `<option value="${curso}">${curso}</option>`;
-    });
 }
 
 // ============================================
@@ -544,16 +545,14 @@ function inicializarSelects() {
 // INICIALIZAR EVENTOS
 // ============================================
 function inicializarEventos() {
-    document.getElementById('btnAgregarDocente').addEventListener('click', agregarDocente);
+    // Botones eliminados - no se asignan eventos
+    // document.getElementById('btnAgregarDocente') - ELIMINADO
+    // document.getElementById('btnReiniciar') - ELIMINADO
+    // document.getElementById('btnAgregar') - ELIMINADO
+    
     document.getElementById('btnMarcarTodosPresentes').addEventListener('click', marcarTodosPresentes);
     document.getElementById('btnExportarCSV').addEventListener('click', exportarCSV);
     document.getElementById('btnGenerarPDF').addEventListener('click', generarPDF);
-    document.getElementById('btnReiniciar').addEventListener('click', reiniciarTodo);
-    document.getElementById('btnAgregar').addEventListener('click', agregarDocente);
-    
-    document.getElementById('nuevoDocente').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') agregarDocente();
-    });
     
     document.getElementById('searchInput').addEventListener('input', (e) => {
         busquedaActual = e.target.value;
